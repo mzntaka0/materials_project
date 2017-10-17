@@ -9,8 +9,10 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
+from luminous import LuminousList
 
-class GraphCoordsConverter:
+
+class Graph2CoordsConverter:
 
     def __init__(self, img_path, **kwargs):
         self.params = dict()
@@ -51,7 +53,6 @@ class GraphCoordsConverter:
         y_coord_list = list()
         for i in range(self.img.shape[1]):
             y_coord = np.where(self.img[:, i]==0)[0].mean()
-            print(y_coord)
             if np.isnan(y_coord):
                 print('please interpolate the graph pixel which doesnt have coord (e.g.modify with PhotoShop)')
                 sys.exit(0)
@@ -59,15 +60,18 @@ class GraphCoordsConverter:
         return np.array(y_coord_list)
         
 
-    def run(self):
+    def run(self, save=False, imshow=True):
         origin_x_list = self._get_x_coords()
         origin_y_list = self._get_y_coords()
 
         modified_x_list = list(map(lambda x: self._convert_x(x), origin_x_list))
         modified_y_list = list(map(lambda y: self._convert_y(y), origin_y_list))
 
-        plt.scatter(modified_x_list, modified_y_list)
-        plt.show()
+        if imshow:
+            plt.scatter(modified_x_list, modified_y_list)
+            plt.show()
+
+
 
 
 
@@ -75,6 +79,5 @@ class GraphCoordsConverter:
 if __name__ == '__main__':
     img_path = 'storage/arbunit_graph.jpg'
 
-    converter = GraphCoordsConverter(img_path)
+    converter = Graph2CoordsConverter(img_path)
     converter.run()
-
