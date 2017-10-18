@@ -9,10 +9,8 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-from luminous import LuminousList
 
-
-class Graph2CoordsConverter:
+class Graph2Coords:
 
     def __init__(self, img_path, **kwargs):
         self.params = dict()
@@ -26,6 +24,8 @@ class Graph2CoordsConverter:
         self.img = cv2.imread(img_path)
         self._img2gray()
         self._img2binary()
+        self.wavelength_list = None
+        self.intensity_list = None
 
         if kwargs:
             for arg_name, val in kwargs.items():
@@ -64,13 +64,14 @@ class Graph2CoordsConverter:
         origin_x_list = self._get_x_coords()
         origin_y_list = self._get_y_coords()
 
-        modified_x_list = list(map(lambda x: self._convert_x(x), origin_x_list))
-        modified_y_list = list(map(lambda y: self._convert_y(y), origin_y_list))
+        self.wavelength_list = list(map(lambda x: self._convert_x(x), origin_x_list))
+        self.intensity_list = list(map(lambda y: self._convert_y(y), origin_y_list))
 
         if imshow:
-            plt.scatter(modified_x_list, modified_y_list)
+            plt.scatter(self.wavelength_list, self.intensity_list)
+            plt.xlabel('wave length [nm]')
+            plt.ylabel('arb unit')
             plt.show()
-
 
 
 
@@ -79,5 +80,5 @@ class Graph2CoordsConverter:
 if __name__ == '__main__':
     img_path = 'storage/arbunit_graph.jpg'
 
-    converter = Graph2CoordsConverter(img_path)
+    converter = Graph2Coords(img_path)
     converter.run()
