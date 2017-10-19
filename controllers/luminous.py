@@ -6,6 +6,7 @@ import sys
 import math
 
 import pandas as pd
+import numpy as np
 
 class Luminous:
 
@@ -17,6 +18,7 @@ class Luminous:
                 )
         self.base_wavelength_list = self._base_df.loc[:, 0].values
         self.base_luminous_list = self._base_df.loc[:, 1].values
+        self.max = self.base_wavelength_list[np.argmax(self.base_luminous_list)]
         _list_num = len(self.base_luminous_list)
         self.gradient_dict = {
                 self.base_wavelength_list[i]: \
