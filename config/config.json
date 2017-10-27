@@ -1,0 +1,12 @@
+{
+    "img_path": "storage/arbunit_graph.jpg",
+    "base_luminous_csv_path": "storage/luminous_efficiency_list.csv",
+    "J": 1.60217646e-19,
+    "I": 0.36,
+    "V": 34.8,
+    "LUMINOUS_FLUX": 2190,
+    "Km": 683,
+    "r": 2.0,
+    "alpha": 0.0,
+    "imshow": false
+}

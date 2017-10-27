@@ -64,14 +64,18 @@ class Graph2Coords:
         origin_x_list = self._get_x_coords()
         origin_y_list = self._get_y_coords()
 
-        self.wavelength_list = list(map(lambda x: self._convert_x(x), origin_x_list))
-        self.intensity_list = list(map(lambda y: self._convert_y(y), origin_y_list))
+        self.wavelength_list = np.array(list(map(lambda x: self._convert_x(x), origin_x_list)))
+        self.intensity_list = np.array(list(map(lambda y: self._convert_y(y), origin_y_list)))
 
         if imshow:
-            plt.scatter(self.wavelength_list, self.intensity_list)
-            plt.xlabel('wave length [nm]')
-            plt.ylabel('arb unit')
-            plt.show()
+            self.show_graph(self.wavelength_list, self.intensity_list)
+
+    def show_graph(self, x, y):
+        plt.scatter(x, y)
+        plt.xlabel('wave length [nm]')
+        #plt.ylabel('arb unit')
+        plt.show()
+
 
 
 

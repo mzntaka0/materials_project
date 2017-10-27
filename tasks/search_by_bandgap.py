@@ -97,6 +97,7 @@ if __name__ == '__main__':
     csv_file_path = 'storage/bandgapDFT.csv'
 
     df = load_csv(csv_file_path) 
+    print(df)
 
 
     composition = Composition(df[0][0])
@@ -108,6 +109,7 @@ if __name__ == '__main__':
     materials = list(map(lambda m: Composition(m), materials))
     target_band_gap = df.loc[:, 1].values
     y_data = np.array(list(map(lambda t: [t], target_band_gap)), np.float32)
+    print(y_data)
     x_data = get_feature_vec(materials)
 
     pca = PCA(n_components=2)
