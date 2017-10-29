@@ -5,6 +5,7 @@ import os
 import sys
 
 import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
 from bpdb import set_trace
 from scipy import integrate
@@ -20,20 +21,19 @@ class ConversionEfficiency:
     J = 1.60217646e-19
 
     def __init__(self, wavelength_list, photon_num_list):
-        self.wavelength_list = wavelength_list
+        self.wavelength_list = wavelength_list * 1e-9
         self.photon_num_list = photon_num_list
         self.Pin = self.Pin()
-        self.band_gap_list = np.arange(0.01, 5.01, 0.01)
-        print(self.band_gap_list)
-        self.band_gap_frequency_list = self.band_gap_list * (self.J / Planck)
-        self.band_gap_wavelength_list = Planck * c / (self.band_gap_list * self.J)
-        print('band_gap_frequency_list: {}'.format(self.band_gap_frequency_list))
-        print('band_gap_wavelength_list: {}'.format(self.band_gap_wavelength_list))
-        self.fc = 1
-        self.Tc = 1.0  # assume
-        self.Ts = 1.0  # assume
-        self.Vc = k * self.Tc / e
-        self.xc = self.Tc / self.Ts
+        self.band_gap_list = np.arange(0.01, 3.01, 0.01)
+        #self.band_gap_frequency_list = self.band_gap_list / Planck
+        #self.band_gap_wavelength_list = Planck * c / (self.band_gap_list * self.J)
+        #print('band_gap_frequency_list: {}'.format(self.band_gap_frequency_list))
+        #print('band_gap_wavelength_list: {}'.format(self.band_gap_wavelength_list))
+        #self.fc = 1
+        #self.Tc = 1.0  # assume
+        #self.Ts = 1.0  # assume
+        #self.Vc = k * self.Tc / e
+        #self.xc = self.Tc / self.Ts
 
     def conclude(self):
         return u() * nu() * FF()
@@ -43,38 +43,16 @@ class ConversionEfficiency:
     # 1. u
     ##############################
     def u(self):
-        return [100 * self.Pout(bandgap_frequency) / self.Pin for bandgap_frequency in self.band_gap_frequency_list]
+        return [100 * self.Pout(band_gap) / self.Pin for band_gap in self.band_gap_list]
 
     # factor of u
     def Pin(self):
-        return np.dot(self.photon_num_list, Planck * c / (self.wavelength_list * 10e-9))
+        return np.dot(self.photon_num_list, Planck * c / self.wavelength_list)
 
     # factor of u
-    def Pout(self, bandgap_frequency):
-        print('bandgap_frequency: {}'.format(bandgap_frequency))
-        print('where: {}'.format(np.where((self.wavelength_list) <= c / bandgap_frequency, self.photon_num_list, 0)))
-        pout = Planck * bandgap_frequency * np.where((self.wavelength_list * 10e-9) <= (c / bandgap_frequency), self.photon_num_list, 0).sum()
-
-
-        #print('c/wavelength: {}, bandgap_frequency: {}'.format(c / (self.wavelength_list*10e-9), bandgap_frequency))
-        #print('where: {}'.format(np.where((c / self.wavelength_list*10e-9) <= bandgap_frequency)))
-        #pout =  Planck * np.dot(np.where((c / (self.wavelength_list*10e-9)) <= bandgap_frequency , self.band_gap_frequency_list, 0.0), self.photon_num_list)
-        print('pout: {}'.format(pout))
-        return pout
-
-        #_Pout = 0.0
-        #print('bandgap_frequency: {}'.format(bandgap_frequency))
-        #for wavelength, photon_num in zip(self.wavelength_list, self.photon_num_list):
-        #    if c / (wavelength * 10e-9) <= bandgap_frequency:
-        #        print("photon_num: {}".format(photon_num))
-        #        print("bandgap_frequency: {}".format(bandgap_frequency))
-        #        pout = photon_num * Planck * bandgap_frequency
-        #        print(pout)
-        #        _Pout += pout
-        #        #_Pout =  sum([photon_num * Planck * bandgap_frequency 
-        ##    for wavelength, photon_num in zip(self.wavelength_list, self.photon_num_list) if c / (wavelength * 10e9) >= bandgap_frequency])
-        #print(_Pout)
-        #return _Pout
+    def Pout(self, band_gap):
+        wavelengthEg = Planck * c / (band_gap * self.J)
+        return band_gap * self.J * np.where(self.wavelength_list <= wavelengthEg, self.photon_num_list, 0).sum()
 
 
     ##############################
@@ -130,9 +108,6 @@ if __name__ == '__main__':
     img_path = 'storage/arbunit_graph.jpg'
     base_luminous_csv_path = 'storage/luminous_efficiency_list.csv'
     J = 1.60217646e-19
-    #I = 0.36
-    #V = 34.8
-    #W = I * V
     LUMINOUS_FLUX = 2190  # [lm] R70 Rank
     Km = 683  # [lm/W]
     r = 2.0  # [m] the radius of lighted surface

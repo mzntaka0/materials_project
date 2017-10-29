@@ -8,6 +8,7 @@ from bpdb import set_trace
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 class Graph2Coords:
