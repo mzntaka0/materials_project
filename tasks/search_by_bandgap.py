@@ -68,7 +68,7 @@ class Net(nn.Module):
     params['input_size'] = 4 
     params['hidden_size'] = 30 
     params['num_classes'] = 1
-    params['num_epochs'] = 5
+    params['num_epochs'] = 10000
     params['batch_size'] = 50
     params['learning_rate'] = 0.001
     params['test_size'] = 0.25
@@ -116,11 +116,11 @@ if __name__ == '__main__':
     pca.fit(x_data)
     Xd = pca.transform(x_data)
     print(Xd)
-    plt.scatter(Xd[:, 0], Xd[:, 1])
-    plt.show()
+    #plt.scatter(Xd[:, 0], Xd[:, 1])
+    #plt.show()
 
-    plt.plot(np.arange(y_data), target_band_gap)
-    plt.show()
+    #plt.plot(np.arange(y_data), target_band_gap)
+    #plt.show()
 
     net = Net()
     x_train, x_test, y_train, y_test = train_test_split(

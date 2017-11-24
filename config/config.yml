@@ -1,0 +1,13 @@
+{
+    img_path = 'storage/arbunit_graph.jpg'
+    base_luminous_csv_path = 'storage/luminous_efficiency_list.csv'
+    J = 1.60217646e-19
+    I = 0.36
+    V = 34.8
+    W = I * V
+    LUMINOUS_FLUX = 2190  # [lm] R70 Rank
+    Km = 683  # [lm/W]
+    r = 2.0  # [m] the radius of lighted surface
+    alpha = 0.0
+    imshow = False
+}

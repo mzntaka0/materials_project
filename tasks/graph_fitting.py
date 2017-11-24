@@ -61,7 +61,8 @@ class Net(nn.Module):
 
 
 if __name__ == '__main__':
-    csv_file_path = 'storage/vl1924e_1.csv'
+    #csv_file_path = 'storage/vl1924e_1.csv'
+    csv_file_path = 'storage/bandgapDFT.csv'
     df = load_csv(csv_file_path)
     x_data = df.loc[:, 0].values.reshape(-1, 1)
     y_data = df.loc[:, 1].values.reshape(-1, 1)

@@ -25,65 +25,80 @@ class ConversionEfficiency:
         self.photon_num_list = photon_num_list
         self.Pin = self.Pin()
         self.band_gap_list = np.arange(0.01, 3.01, 0.01)
+        self.Tc = 300  # [K]
+        self.Vc = k * self.Tc / e
+        self.fc = 1.0
+        self.Fs = np.array([self.num_of_photon(band_gap) for band_gap in self.band_gap_list])
+        self.Ish = e * self.Fs
+        plt.scatter(self.band_gap_list, self.Ish)
+        plt.title('Ish - bandgap')
+        plt.xlabel('Band gap [eV]')
+        plt.ylabel('Short currency [A]')
+        plt.show()
         #self.band_gap_frequency_list = self.band_gap_list / Planck
-        #self.band_gap_wavelength_list = Planck * c / (self.band_gap_list * self.J)
         #print('band_gap_frequency_list: {}'.format(self.band_gap_frequency_list))
         #print('band_gap_wavelength_list: {}'.format(self.band_gap_wavelength_list))
-        #self.fc = 1
-        #self.Tc = 1.0  # assume
         #self.Ts = 1.0  # assume
-        #self.Vc = k * self.Tc / e
         #self.xc = self.Tc / self.Ts
 
-    def conclude(self):
-        return u() * nu() * FF()
-    
+
 
     ##############################
     # 1. u
     ##############################
     def u(self):
-        return [100 * self.Pout(band_gap) / self.Pin for band_gap in self.band_gap_list]
+        return np.array([100 * self.Pout(band_gap) / self.Pin for band_gap in self.band_gap_list])
 
-    # factor of u
     def Pin(self):
-        return np.dot(self.photon_num_list, Planck * c / self.wavelength_list)
+        return trapezoidal(self.wavelength_list, self.photon_num_list * (Planck * c / self.wavelength_list))
 
-    # factor of u
     def Pout(self, band_gap):
         wavelengthEg = Planck * c / (band_gap * self.J)
-        return band_gap * self.J * np.where(self.wavelength_list <= wavelengthEg, self.photon_num_list, 0).sum()
+        return band_gap * self.J * trapezoidal(self.wavelength_list, np.where(self.wavelength_list <= wavelengthEg, self.photon_num_list, 0))
 
 
     ##############################
     # 2. nu
     ##############################
     def nu(self, band_gap):
-        xg = self._xg(band_gap)
-        return Vop(xg) / Vg
+        Vg = band_gap * self.J / e
+        return self.Vop(band_gap * self.J) / Vg
 
-    # factor of nu
     def Vop(self, band_gap):
-        xg = self._xg(band_gap)
-        wavelengthEg = None
-        nug = None
+        return self.Vc * np.log((self.fc * self.num_of_photon(band_gap)) / self.Fc0(band_gap))
 
-        return self.Vc * np.log((self.fc * num_of_photon(wavelengthEg)) / 2*np.pi*Pflux(nug, xg))
+    def num_of_photon(self, band_gap):
+        wavelengthEg = Planck * c / (band_gap * self.J)
+        return trapezoidal(self.wavelength_list, np.where(self.wavelength_list <= wavelengthEg, self.photon_num_list, 0))
 
-    # factor of nu(Vop)
-    def num_of_photon(self, wavelengthEg):
-        pass
+    def Fc0(self, band_gap):
+        return 2*np.pi*self.Pflux(band_gap)
 
-    # factor of nu(Vop)
-    def Pflux(self, nug, xg):
-        return ((2*k**3*self.Tc**3)/h**3*c**2) * _nu_denom(xg, self.xc)
+    def Pflux(self, band_gap):
+        """determined by the temperature of solar cell"""
+        nug = (band_gap * self.J) / Planck
+        nu_list = c / self.wavelength_list
+        target_nu_list = np.where(nu_list > nug, nu_list, 0.0)
+        pflux = np.vectorize(self._integrated_f)(target_nu_list)
+        return trapezoidal(nu_list, pflux)
 
-    # factor of nu(Pflux)
-    def _nu_denom(self, xg):
-        return integrate.quad(lambda x: x**2/(np.exp(x) - 1), xg/self.xc, np.inf)
+    def _integrated_f(self, nu):
+        if nu == 0.0:
+            return 0.0
+        else:
+            return (2/c**2)*((nu**2)/(np.exp(Planck*nu/(k*self.Tc)) - 1.0))
+        
+        #return trapezoidal(nu_list, np.where(nu_list > nug, self._integrated_f(nu), 0))
+        #print('num_of_zero: {}'.format(len(np.where(target_nu_list)[0])))
+        #power = Planck*target_nu_list / (k*self.Tc)
+        #denom = np.exp(power) - 1
+        #print('sum_denom: {}'.format(np.sum(denom)))
+        #numer = target_nu_list**2
+        #print('sum_numer: {}'.format(np.sum(numer)))
+        #integrated = numer/denom
+        #integrated[np.isnan(integrated)] = 0.0
+        #return (2/c**2) * trapezoidal(nu_list, integrated)
 
-    def _xg(self, band_gap):
-        return bandgap / (k * self.Ts)
 
 
     ##############################
@@ -100,8 +115,13 @@ class ConversionEfficiency:
         return zm**2 / ((1 + zm - np.exp(-zm)) * (zm + np.log(1 + zm)))
 
 
-
-
+def show(y):
+    try:
+        plt.scatter(np.arange(len(y)), y)
+        plt.show()
+    except TypeError:
+        print('type not correct. pass')
+        return
 
 
 if __name__ == '__main__':
@@ -112,7 +132,7 @@ if __name__ == '__main__':
     Km = 683  # [lm/W]
     r = 2.0  # [m] the radius of lighted surface
     alpha = 0.0
-    imshow = False
+    imshow = True
     
     # get coordinates from graph image
     graph2coords = Graph2Coords(img_path)
@@ -149,6 +169,11 @@ if __name__ == '__main__':
     conversion_efficiency = ConversionEfficiency(graph2coords.wavelength_list, graph2coords.num_photons_list)
     print('Pin: {}'.format(conversion_efficiency.Pin))
     ideal = conversion_efficiency.u()
+    print('max efficiency: {}'.format(conversion_efficiency.band_gap_list[np.argmax(ideal)]))
     plt.scatter(conversion_efficiency.band_gap_list, ideal)
+    plt.xlabel('band gap [eV]')
+    plt.ylabel('efficiency [%]')
     plt.show()
-
+    nu = np.vectorize(conversion_efficiency.nu)(conversion_efficiency.band_gap_list)
+    plt.scatter(conversion_efficiency.band_gap_list, nu*ideal)
+    plt.show()
